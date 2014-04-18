@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="FileEnumerator.h" />
+    <ClInclude Include="TypeDefines.h" />
+    <ClInclude Include="FileRepo.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="QuickIndex.h" />
+    <ClInclude Include="QuickIndexImpl.h" />
+    <ClInclude Include="MappedFile.h" />
+    <ClInclude Include="Utilities.h" />
+    <ClInclude Include="File.h" />
+    <ClInclude Include="ObjectDb.h" />
+    <ClInclude Include="ObjectId.h" />
+    <ClInclude Include="ObjectStreamImpl.h" />
+    <ClInclude Include="FileBuffer.h" />
+    <ClInclude Include="FastHash.h" />
+    <ClInclude Include="Sha1Hash.h" />
+    <ClInclude Include="sha1.h" />
+    <ClInclude Include="FileUtil.h" />
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="ErrorCode.h" />
+    <ClInclude Include="FileReadBuffer.h" />
+    <ClInclude Include="ObjectType.h" />
+    <ClInclude Include="FileRepoImpl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="QuickIndex.cpp" />
+    <ClCompile Include="QuickIndexImpl.cpp" />
+    <ClCompile Include="MappedFile.cpp" />
+    <ClCompile Include="FileEnumerator.cpp" />
+    <ClCompile Include="Utilities.cpp" />
+    <ClCompile Include="File.cpp" />
+    <ClCompile Include="ObjectDb.cpp" />
+    <ClCompile Include="ObjectId.cpp" />
+    <ClCompile Include="ObjectStreamImpl.cpp" />
+    <ClCompile Include="FileBuffer.cpp" />
+    <ClCompile Include="FastHash.cpp" />
+    <ClCompile Include="Sha1Hash.cpp" />
+    <ClCompile Include="FileUtil.cpp" />
+    <ClCompile Include="Version.cpp" />
+    <ClCompile Include="sha1.cpp" />
+    <ClCompile Include="FileReadBuffer.cpp" />
+    <ClCompile Include="ObjectType.cpp" />
+    <ClCompile Include="FileRepoImpl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ReadMe" />
+  </ItemGroup>
+</Project>
