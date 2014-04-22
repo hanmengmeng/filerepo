@@ -1,12 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="FileEnumerator.h" />
     <ClInclude Include="TypeDefines.h" />
     <ClInclude Include="FileRepo.h" />
@@ -30,9 +24,10 @@
     <ClInclude Include="FileReadBuffer.h" />
     <ClInclude Include="ObjectType.h" />
     <ClInclude Include="FileRepoImpl.h" />
+    <ClInclude Include="FileEnumeratorImpl.h" />
+    <ClInclude Include="RepoPath.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="QuickIndex.cpp" />
     <ClCompile Include="QuickIndexImpl.cpp" />
     <ClCompile Include="MappedFile.cpp" />
@@ -51,6 +46,9 @@
     <ClCompile Include="FileReadBuffer.cpp" />
     <ClCompile Include="ObjectType.cpp" />
     <ClCompile Include="FileRepoImpl.cpp" />
+    <ClCompile Include="FileEnumeratorImpl.cpp" />
+    <ClCompile Include="RepoPath.cpp" />
+    <ClCompile Include="FileRepo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe" />

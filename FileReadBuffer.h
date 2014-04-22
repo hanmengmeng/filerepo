@@ -18,6 +18,7 @@ public:
     ~FileReadBuffer();
 
     bool Open(const tstring &file_path);
+    bool IsOpened();
     size_t Read(void *buf, size_t len);
     void CleanUp();
     ObjectType GetType();
@@ -38,6 +39,8 @@ private:
     size_t tail_;
     unsigned char headerbuf_[ODB_HEADER_MAX_LEN];
     unsigned char rawbuf_[RAW_BUFFER_LEN];
+
+    DISALLOW_COPY_AND_ASSIGN(FileReadBuffer);
 };
 
 } // namespace filerepo

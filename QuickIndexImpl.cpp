@@ -22,10 +22,11 @@ QuickIndexImpl::~QuickIndexImpl()
     if (NULL != next_large_index_) {
         delete next_large_index_;
     }
-    if (index_file_modify_) {
-        index_file_.Close();
-        ::CopyFile(index_file_path_temp_.c_str(), index_file_path_.c_str(), FALSE);
+    index_file_.Close();
+    if (IsFileExist(index_file_path_temp_)) {
         ::DeleteFile(index_file_path_temp_.c_str());
+        int n = ::GetLastError();
+        n = ::GetLastError();
     }
 }
 
@@ -36,6 +37,8 @@ bool QuickIndexImpl::Init( const tstring &path, size_t file_number, size_t entry
     }
     bool exist = false;
     index_file_path_ = path;//MakePathRegular(path);
+
+    // Write to a temp file
     index_file_path_temp_ = index_file_path_ + _T(".temp");
 
     if (!IsFileExist(index_file_path_)) {
@@ -256,18 +259,17 @@ bool QuickIndexImpl::FindEntry( const std::string &path, Entry *entry )
 
 size_t QuickIndexImpl::GetEntriesCount()
 {
-    size_t total_count = 0;
-    if (NULL == header_) {
-        return 0;
+    size_t total_count = header_->num_entries;
+
+    QuickIndexImpl *next = this;
+    while ((next = next->Next()) != NULL) {
+        total_count += next->header_->num_entries;
     }
-    QuickIndex *qi_next = NULL;
-    if ((qi_next = Next()) != NULL) {
-        total_count += qi_next->GetEntriesCount();
+
+    next = this;
+    while ((next = next->NextLarge()) != NULL) {
+        total_count += next->header_->num_entries;
     }
-    if ((qi_next = NextLarge()) != NULL) {
-        total_count += qi_next->GetEntriesCount();
-    }
-    total_count += header_->num_entries;
     return total_count;
 }
 
@@ -339,7 +341,7 @@ size_t QuickIndexImpl::GetEntrySize() const
     return header_->entry_size;
 }
 
-void QuickIndexImpl::Destroy()
+void QuickIndexImpl::Clear()
 {
     delete this;
 }
@@ -355,7 +357,7 @@ QuickIndexImpl * QuickIndexImpl::Next()
     if (0 == header_->next_file) {
         return NULL;
     }
-    tstring path = GenerateNextIndexFileName(header_->next_file);
+    tstring path = GenerateNextIndexFileName(index_file_path_, header_->next_file);
     if (path.empty()) {
         return NULL;
     }
@@ -379,7 +381,7 @@ QuickIndexImpl * QuickIndexImpl::NextLarge()
     if (0 == header_->next_large_file) {
         return NULL;
     }
-    tstring path = GenerateNextIndexFileName(header_->next_large_file);
+    tstring path = GenerateNextIndexFileName(index_file_path_, header_->next_large_file);
     if (path.empty()) {
         return NULL;
     }
@@ -534,10 +536,10 @@ bool QuickIndexImpl::PrepareIndexFile()
     }
     index_file_.Close();
     header_ = NULL;
-    if (!CopyFile(index_file_path_.c_str(), index_file_path_temp_.c_str(), FALSE)) {
+    if (!CopyFile(index_file_path_.c_str(), index_file_path_temp_.c_str())) {
         return false;
     }
-    if (GetFileSize(index_file_path_.c_str()) > 0) {
+    if (GetFileSize(index_file_path_temp_.c_str()) > 0) {
         header_ = (QuickIndexHeader*)index_file_.Init(index_file_path_temp_, 0);
     }
     else {
@@ -590,7 +592,7 @@ bool QuickIndexImpl::RemoveEntry( const std::string &path )
 
 EntryIterator *QuickIndexImpl::GetEntryIterator()
 {
-    return NULL;
+    return new EntryIteratorImpl(this);
 }
 
 void QuickIndexImpl::UpdateEntry( EntryAddr addr, const std::string &path, const Entry &entry )
@@ -618,9 +620,9 @@ void QuickIndexImpl::UpdateEntry( EntryAddr addr, const std::string &path, const
     UpdateEntriesAllocMap(addr, true);
 }
 
-tstring QuickIndexImpl::GenerateNextIndexFileName( size_t index_number )
+tstring QuickIndexImpl::GenerateNextIndexFileName(const tstring &prefix,  size_t index_number )
 {
-    tstring path = index_file_path_;
+    tstring path = prefix;
     if (0 == header_->current_file) {
         path += _T("_");
         tstringstream ss;
@@ -690,35 +692,148 @@ std::string QuickIndexImpl::GetEntryPath( const Entry *entry )
     return FormatObjectId(entry->oid);
 }
 
+bool QuickIndexImpl::Save()
+{
+    bool ret = true;
+    if (index_file_modify_) {
+        index_file_modify_ = false;
+        ret = ::CopyFile(index_file_path_temp_.c_str(), index_file_path_.c_str(), FALSE) == TRUE;
+#if 0
+        if (ret) {
+            index_file_.Close();
+            ::DeleteFile(index_file_path_temp_.c_str());
+            header_ = (QuickIndexHeader*)index_file_.Init(index_file_path_, sizeof(QuickIndexHeader));
+        }
+        else {
+            header_ = (QuickIndexHeader*)index_file_.Init(index_file_path_temp_, sizeof(QuickIndexHeader));
+        }
+#endif
+    }
+    return ret;
+}
+
+bool QuickIndexImpl::CopyTo( const tstring &target_index_path )
+{
+    QuickIndexImpl *next = Next();
+    if (NULL != next) {
+        if (!next->CopyTo(GenerateNextIndexFileName(target_index_path, header_->next_file))) {
+            return false;
+        }
+    }
+    QuickIndexImpl *next_large = NextLarge();
+    if (NULL != next_large) {
+        if (!next_large->CopyTo(GenerateNextIndexFileName(target_index_path, header_->next_large_file))) {
+            return false;
+        }
+    }
+
+    return CopyFile(index_file_path_, target_index_path);
+}
 
 EntryIteratorImpl::EntryIteratorImpl( QuickIndexImpl *qii )
 {
-    quick_index_ = qii;
+    root_ = qii;
+    current_index_ = qii;
+    entry_pos_ = 0;
+    Begin();
 }
 
 std::string EntryIteratorImpl::GetPath()
 {
-    return "";
+    if (IsEnd()) {
+        return "";
+    }
+    EntryAddr addr = current_index_->GetEntryAddr(entry_pos_);
+    assert(current_index_->IsAddrUsed(addr));
+    if (!current_index_->IsAddrUsed(addr)) {
+        return "";
+    }
+    if (current_index_->IsLargeEntry()) {
+        EntryLarge *el = static_cast<EntryLarge*>(current_index_->GetEntryByAddr(addr));
+        return el->path;
+    }
+    EntryShort *es = static_cast<EntryShort*>(current_index_->GetEntryByAddr(addr));
+    return es->path;
 }
 
 Entry EntryIteratorImpl::GetEntry()
 {
-    return Entry();
+    if (IsEnd()) {
+        return Entry();
+    }
+    EntryAddr addr = current_index_->GetEntryAddr(entry_pos_);
+    assert(current_index_->IsAddrUsed(addr));
+    if (!current_index_->IsAddrUsed(addr)) {
+        return Entry();
+    }
+
+    if (current_index_->IsLargeEntry()) {
+        EntryLarge *el = static_cast<EntryLarge*>(current_index_->GetEntryByAddr(addr));
+        return el->content;
+    }
+    EntryShort *es = static_cast<EntryShort*>(current_index_->GetEntryByAddr(addr));
+    return es->content;
 }
 
-bool EntryIteratorImpl::Next()
+void EntryIteratorImpl::Next()
 {
-    return false;
+    if (IsEnd()) {
+        return;
+    }
+
+    entry_pos_++;
+    while (NULL != current_index_) {
+        for (; entry_pos_ < kMaxEntriesCount; entry_pos_++) {
+            EntryAddr addr = current_index_->GetEntryAddr(entry_pos_);
+            if (current_index_->IsAddrUsed(addr)) {
+                break;
+            }
+        }
+        bool large = false;
+        if (entry_pos_ >= kMaxEntriesCount) {
+            if (current_index_->IsLargeEntry()) {
+                current_index_ = current_index_->NextLarge();
+                large = true;
+            }
+            else {
+                current_index_ = current_index_->Next();
+                large = false;
+            }
+            entry_pos_ = 0;
+        }
+        else {
+            break;
+        }
+
+        if (NULL == current_index_ && !large) {
+            current_index_ = root_->NextLarge();
+            entry_pos_ = 0;
+        }
+    }
 }
 
 bool EntryIteratorImpl::IsEnd()
 {
-    return false;
+    return NULL == current_index_;
 }
 
-void EntryIteratorImpl::Destroy()
+void EntryIteratorImpl::Clear()
 {
     delete this;
+}
+
+void EntryIteratorImpl::Begin()
+{
+    current_index_ = root_;
+    for (entry_pos_ = 0; entry_pos_ < kMaxEntriesCount; entry_pos_++) {
+        EntryAddr addr = current_index_->GetEntryAddr(entry_pos_);
+        if (current_index_->IsAddrUsed(addr)) {
+            break;
+        }
+    }
+    if (entry_pos_ >= kMaxEntriesCount) {
+        current_index_ = NULL;
+    }
 }
 
 }

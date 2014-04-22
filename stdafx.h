@@ -18,11 +18,14 @@
 #include <assert.h>
 #include <sstream>
 #include <stdint.h>
+#include <time.h>
 
 #include "TypeDefines.h"
 
 #include <zlib.h>
+#include <json.h>
 
+#include "RepoPath.h"
 #include "ObjectType.h"
 #include "FileEnumerator.h"
 #include "FileRepo.h"
@@ -42,3 +45,4 @@
 #include "ErrorCode.h"
 #include "FileReadBuffer.h"
 #include "FileRepoImpl.h"
+#include "FileEnumeratorImpl.h"

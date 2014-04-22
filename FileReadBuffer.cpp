@@ -42,7 +42,7 @@ bool FileReadBuffer::Open( const tstring &file_path )
 
     // Inflate odb file header
     while (z_return == Z_OK && zs_.total_out != ODB_HEADER_MAX_LEN) {
-        if (::ReadFile(handle_, rawbuf_, sizeof(rawbuf_), &readlen, NULL)) {
+        if (::ReadFile(handle_, rawbuf_, sizeof(rawbuf_), &readlen, NULL) && readlen > 0) {
             SetStreamInput(&zs_, rawbuf_, readlen);
             z_return = inflate(&zs_, 0);
         }
@@ -90,7 +90,7 @@ size_t FileReadBuffer::Read( void *buf, size_t len )
     }
 
     while (z_return == Z_OK && zs_.avail_out > 0) {
-        if (::ReadFile(handle_, rawbuf_, sizeof(rawbuf_), &readlen, NULL)) {
+        if (::ReadFile(handle_, rawbuf_, sizeof(rawbuf_), &readlen, NULL) && readlen > 0) {
             SetStreamInput(&zs_, rawbuf_, readlen);
             z_return = inflate(&zs_, 0);
         }
@@ -188,6 +188,11 @@ ObjectType FileReadBuffer::GetType()
 size_t FileReadBuffer::GetSize()
 {
     return len_;
+}
+
+bool FileReadBuffer::IsOpened()
+{
+    return handle_ != INVALID_HANDLE_VALUE;
 }
 
 }

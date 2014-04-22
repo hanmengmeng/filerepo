@@ -45,26 +45,35 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>zlib;json;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Ws2_32.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>zlib;json;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -72,6 +81,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Ws2_32.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ReadMe" />
@@ -81,6 +93,7 @@
     <ClInclude Include="File.h" />
     <ClInclude Include="FileBuffer.h" />
     <ClInclude Include="FileEnumerator.h" />
+    <ClInclude Include="FileEnumeratorImpl.h" />
     <ClInclude Include="FileReadBuffer.h" />
     <ClInclude Include="FileRepoImpl.h" />
     <ClInclude Include="FileUtil.h" />
@@ -93,6 +106,7 @@
     <ClInclude Include="ObjectType.h" />
     <ClInclude Include="QuickIndex.h" />
     <ClInclude Include="QuickIndexImpl.h" />
+    <ClInclude Include="RepoPath.h" />
     <ClInclude Include="sha1.h" />
     <ClInclude Include="Sha1Hash.h" />
     <ClInclude Include="stdafx.h" />
@@ -105,7 +119,9 @@
     <ClCompile Include="File.cpp" />
     <ClCompile Include="FileBuffer.cpp" />
     <ClCompile Include="FileEnumerator.cpp" />
+    <ClCompile Include="FileEnumeratorImpl.cpp" />
     <ClCompile Include="FileReadBuffer.cpp" />
+    <ClCompile Include="FileRepo.cpp" />
     <ClCompile Include="FileRepoImpl.cpp" />
     <ClCompile Include="FileUtil.cpp" />
     <ClCompile Include="ObjectId.cpp" />
@@ -116,16 +132,16 @@
     <ClCompile Include="ObjectType.cpp" />
     <ClCompile Include="QuickIndex.cpp" />
     <ClCompile Include="QuickIndexImpl.cpp" />
+    <ClCompile Include="RepoPath.cpp" />
     <ClCompile Include="sha1.cpp" />
     <ClCompile Include="Sha1Hash.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="Utilities.cpp" />
     <ClCompile Include="Version.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="json\json.vcxproj">
+      <Project>{d5e95896-1f99-463c-8f99-5db4695379c3}</Project>
+    </ProjectReference>
     <ProjectReference Include="zlib\zlib.vcxproj">
       <Project>{24f59734-28bc-4def-bcb2-52ed778de978}</Project>
     </ProjectReference>

@@ -1,6 +1,8 @@
 #ifndef FILE_REPO_H
 #define FILE_REPO_H
 
+#include "TypeDefines.h"
+
 namespace filerepo
 {
 
@@ -10,7 +12,7 @@ namespace filerepo
 // std::vector<FileAttr> file_list_need_to_remove;
 //
 // FileRepo *repo = FileRepo::Create(_T("path to repo"));
-// FileEnumerator *enumer = repo.CreateEnumerator();
+// FileEnumerator *enumer = FileEnumerator::Create();
 // while (!enumer.IsEnd()) {
 //     FileAttr attr = enumer.GetFileAttr();
 //     if (attr in file_list_need_to_backup) {
@@ -41,14 +43,15 @@ namespace filerepo
 // FileRepo *repo = FileRepo::Create(_T("path to repo"));
 // std::vector<FileRepoTag> tags;
 // repo.GetAllTags(&tags);
-// FileEnumerator *enumer = repo.CreateEnumerator();
+// FileEnumerator *enumer = FileEnumerator::Create(tags.at(0));
 // while (!enumer.IsEnd()) {
 //     FileAttr attr = enumer.GetFileAttr();
 //     tstring temp_file_path = MakeTempFilePath();
 //     enumer.ExtractFile(temp_file_path);
 //     // Do something...
-//
+//     enumer.Next();
 // }
+//
 
 class FileRepo
 {
@@ -57,22 +60,19 @@ public:
 
     static FileRepo *Create(const tstring &repo_dir);
 
-    virtual bool IsCreated() = 0;
+    virtual int AddFile(const tstring &file_path, const FileAttr &file_attr) = 0;
 
-    virtual bool AddFile(const tstring &file_path, const FileAttr &file_attr) = 0;
+    virtual int AddDir(const FileAttr &file_attr) = 0;
 
-    virtual bool AddDir(const FileAttr &file_attr) = 0;
+    virtual int RemoveFile(const FileAttr &file_attr) = 0;
 
-    virtual bool RemoveFile(const FileAttr &file_attr) = 0;
+    virtual int CreateTag(const std::string &info) = 0;
 
-    virtual bool CreateTag(const std::string &info, int type = 0) = 0;
+    virtual int GetAllTags(std::vector<FileRepoTag> *tag_list) = 0;
 
-    virtual bool GetAllTags(std::vector<FileRepoTag> *tag_list) = 0;
+    virtual int RemoveTag(const FileRepoTag &tag) = 0;
 
-    virtual FileEnumerator *CreateEnumerator() = 0;
-
-    virtual FileEnumerator *CreateEnumerator(const FileRepoTag &tag) = 0;
-
+    // Get the version of the file repository
     virtual int GetVersion() = 0;
 
     // Free memory

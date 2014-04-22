@@ -16,7 +16,7 @@ namespace filerepo
 struct hash_ctx;
 
 class FileBuffer;
-typedef size_t (FileBuffer::*fn_write)(void *source, size_t len);
+typedef int (FileBuffer::*fn_write)(void *source, size_t len);
 
 class FileBuffer
 {
@@ -25,20 +25,21 @@ public:
     ~FileBuffer();
 
     bool Open(const tstring &path, int flags);
-    size_t Write(const void *buff, size_t len);
+    bool IsOpened();
+    int Write(const void *buff, size_t len);
     bool Reserve(void **buff, size_t len);
-    size_t Printf(const char *format, ...);
+    int Printf(const char *format, ...);
     bool GetHash(ObjectId *oid);
     bool Commit(mode_t mode);
     bool CommitAt(const tstring &path, mode_t mode);
-    size_t Flush();
+    int Flush();
     void CleanUp();
 
 private:
-    size_t WriteNormal(void *source, size_t len);
-    size_t WriteDeflate(void *source, size_t len);
+    int WriteNormal(void *source, size_t len);
+    int WriteDeflate(void *source, size_t len);
     void AddToCache(const void *buf, size_t len);
-    size_t FlushBuffer();
+    int FlushBuffer();
 
 private:
     unsigned char *buffer_;
@@ -56,6 +57,8 @@ private:
     tstring path_origin_;
     tstring path_lock_;
     fn_write write_;
+
+    DISALLOW_COPY_AND_ASSIGN(FileBuffer);
 };
 
 } // namespace filerepo

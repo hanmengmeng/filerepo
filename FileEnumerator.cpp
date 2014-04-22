@@ -3,9 +3,14 @@
 namespace filerepo
 {
 
-FileEnumerator * FileEnumerator::GetFileEnumerator(const FileRepoTag &tag)
+FileEnumerator * FileEnumerator::Create( const tstring &repo_dir )
 {
-    return NULL;
+    return new FileEnumeratorImpl(repo_dir);
+}
+
+FileEnumerator * FileEnumerator::Create(const tstring &repo_dir, const FileRepoTag &tag)
+{
+    return new FileEnumeratorImpl(repo_dir, tag);
 }
 
 }

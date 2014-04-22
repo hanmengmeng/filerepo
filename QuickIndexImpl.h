@@ -52,14 +52,18 @@ class EntryIteratorImpl : public EntryIterator
 public:
     EntryIteratorImpl(QuickIndexImpl *qii);
 
-    virtual std::string GetPath();
-    virtual Entry GetEntry();
-    virtual bool Next();
-    virtual bool IsEnd();
-    virtual void Destroy();
+    // Implement EntryIterator
+    virtual std::string GetPath() OVERRIDE;
+    virtual Entry GetEntry() OVERRIDE;
+    virtual void Next() OVERRIDE;
+    virtual bool IsEnd() OVERRIDE;
+    virtual void Clear() OVERRIDE;
+    virtual void Begin() OVERRIDE;
 
 private:
-    QuickIndexImpl *quick_index_;
+    QuickIndexImpl *root_;
+    QuickIndexImpl *current_index_;
+    size_t entry_pos_; // Start from 0
 };
 
 class QuickIndexImpl : public QuickIndex
@@ -70,14 +74,23 @@ public:
 
     bool Init(const tstring &path, bool read_only);
 
-    virtual bool AddEntry(const std::string &path, const Entry &entry);
-    virtual bool RemoveEntry(const std::string &path);
-    virtual EntryIterator *GetEntryIterator();
-    virtual bool FindEntry(const std::string &path, Entry *entry);
-    virtual size_t GetEntriesCount();
-    virtual void Destroy();
+    virtual bool AddEntry(const std::string &path, const Entry &entry) OVERRIDE;
 
-    virtual std::string GetEntryPath(const Entry *entry);
+    virtual bool RemoveEntry(const std::string &path) OVERRIDE;
+
+    virtual EntryIterator *GetEntryIterator() OVERRIDE;
+
+    virtual bool FindEntry(const std::string &path, Entry *entry) OVERRIDE;
+
+    virtual size_t GetEntriesCount() OVERRIDE;
+
+    virtual void Clear() OVERRIDE;
+
+    virtual std::string GetEntryPath(const Entry *entry) OVERRIDE;
+
+    virtual bool Save() OVERRIDE;
+
+    virtual bool CopyTo(const tstring &target_index_path) OVERRIDE;
 
     // Delete all related index file from disk
     bool DeleteFiles();
@@ -115,7 +128,7 @@ private:
 
     void UpdateEntry(EntryAddr addr, const std::string &path, const Entry &entry);
 
-    tstring GenerateNextIndexFileName(size_t index_number);
+    tstring GenerateNextIndexFileName(const tstring &prefix, size_t index_number);
 
     bool FindEntryInCurrentIndex(const std::string &path, EntryAddr &found_addr);
 
@@ -129,6 +142,9 @@ private:
     QuickIndexImpl *next_large_index_;
     QuickIndexImpl *next_index_;
     bool index_file_modify_;
+
+    friend class EntryIteratorImpl;
+    DISALLOW_COPY_AND_ASSIGN(QuickIndexImpl);
 };
 
 } // namespace filerepo

@@ -9,6 +9,8 @@ namespace filerepo
 std::wstring utf8_to_16(const char *src);
 std::string utf16_to_8(const wchar_t *src);
 
+bool operator==(const FileStat &a, const FileStat &b);
+
 }
 
 #endif

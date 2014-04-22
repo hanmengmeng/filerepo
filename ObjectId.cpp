@@ -49,4 +49,38 @@ void FormatToObjectIdW( const std::string &format_str, ObjectId *oid )
 
 }
 
+void CopyObjectId( const ObjectId *src, ObjectId *target )
+{
+    memcpy(target, src, sizeof(*src));
+}
+
+bool IsExtendObjectId( const ObjectId &oid )
+{
+    assert(OBJECT_ID_EXTEND_RAWSZ == sizeof(int));
+    int *extend = (int*)&oid.extend_id;
+    return *extend > 0;
+}
+
+bool IsObjectEqual( const ObjectId &a, const ObjectId &b )
+{
+    const unsigned char *sha1 = a.id;
+    const unsigned char *sha2 = b.id;
+    for (int i = 0; i < OBJECT_ID_RAWSZ; i++, sha1++, sha2++) {
+        if (*sha1 != *sha2) {
+            return false;
+        }
+    }
+
+#if 0 // Not compare extend id
+    const unsigned char *e1 = a.extend_id;
+    const unsigned char *e2 = b.extend_id;
+    for (size_t i = 0; i < OBJECT_ID_EXTEND_RAWSZ; i++, sha1++, sha2++) {
+        if (*e1 != *e2) {
+            return false;
+        }
+    }
+#endif
+    return true;
+}
+
 } // namespace filerepo
